@@ -22,6 +22,7 @@ interface Endpoint {
 export default function Home() {
   const [endpoints, setEndpoints] = useState<Endpoint[]>([]);
   const [checking, setChecking] = useState(false);
+  const [mounted, setMounted] = useState(false);
 
   const fetchEndpoints = useCallback(async () => {
     const res = await fetch("/api/endpoints");
@@ -30,8 +31,11 @@ export default function Home() {
   }, []);
 
   useEffect(() => {
+    setMounted(true);
     fetchEndpoints();
   }, [fetchEndpoints]);
+
+  if (!mounted) return null;
 
   const runCheck = async () => {
     setChecking(true);

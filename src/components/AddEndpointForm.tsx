@@ -167,13 +167,15 @@ export default function AddEndpointForm({ onAdd, existingGroups }: AddEndpointFo
         )}
 
         {/* Submit */}
-        <button
-          type="submit"
-          disabled={loading}
-          className="px-5 py-2 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-600 text-white rounded-lg font-medium transition-colors cursor-pointer"
-        >
-          {loading ? "Adding..." : "Add Endpoint"}
-        </button>
+        <div className="pt-4 border-t border-gray-800">
+          <button
+            type="submit"
+            disabled={loading}
+            className="px-5 py-2 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-600 text-white rounded-lg font-medium transition-colors cursor-pointer"
+          >
+            {loading ? "Adding..." : "Add Endpoint"}
+          </button>
+        </div>
       </form>
     </div>
   );

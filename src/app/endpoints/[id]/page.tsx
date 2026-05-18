@@ -19,6 +19,7 @@ interface EndpointDetail {
   method: string;
   headers: string | null;
   body: string | null;
+  group: string;
   createdAt: string;
   checks: Check[];
   stats: {
@@ -37,6 +38,7 @@ export default function EndpointDetailPage() {
   const [checking, setChecking] = useState(false);
   const [editing, setEditing] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [groups, setGroups] = useState<string[]>([]);
 
   // Edit form state
   const [editName, setEditName] = useState("");
@@ -44,6 +46,7 @@ export default function EndpointDetailPage() {
   const [editMethod, setEditMethod] = useState("GET");
   const [editHeaders, setEditHeaders] = useState("");
   const [editBody, setEditBody] = useState("");
+  const [editGroup, setEditGroup] = useState("");
 
   const fetchEndpoint = useCallback(async () => {
     const res = await fetch(`/api/endpoints/${params.id}/checks`);
@@ -60,13 +63,18 @@ export default function EndpointDetailPage() {
     fetchEndpoint();
   }, [fetchEndpoint]);
 
-  const startEditing = () => {
+  const startEditing = async () => {
     if (!endpoint) return;
+    // Fetch existing groups for the dropdown
+    const res = await fetch("/api/groups");
+    const data = await res.json();
+    setGroups(data);
     setEditName(endpoint.name);
     setEditUrl(endpoint.url);
     setEditMethod(endpoint.method);
     setEditHeaders(endpoint.headers || "");
     setEditBody(endpoint.body || "");
+    setEditGroup(endpoint.group || "Default");
     setEditing(true);
   };
 
@@ -83,6 +91,7 @@ export default function EndpointDetailPage() {
         name: editName,
         url: editUrl,
         method: editMethod,
+        group: editGroup || "Default",
         headers: editHeaders || null,
         requestBody: editBody || null,
       }),
@@ -200,6 +209,22 @@ export default function EndpointDetailPage() {
                   <option value="PATCH">PATCH</option>
                   <option value="DELETE">DELETE</option>
                 </select>
+              </div>
+              <div className="flex flex-col gap-1">
+                <label className="text-sm text-gray-400">Group</label>
+                <input
+                  type="text"
+                  value={editGroup}
+                  onChange={(e) => setEditGroup(e.target.value)}
+                  placeholder="e.g. Payment APIs"
+                  list="edit-group-suggestions"
+                  className="px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-blue-500 w-48"
+                />
+                <datalist id="edit-group-suggestions">
+                  {groups.map((g) => (
+                    <option key={g} value={g} />
+                  ))}
+                </datalist>
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="flex flex-col gap-1">

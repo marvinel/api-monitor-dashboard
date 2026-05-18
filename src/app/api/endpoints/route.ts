@@ -19,7 +19,7 @@ export async function GET() {
 // POST /api/endpoints — Add a new endpoint to monitor
 export async function POST(request: NextRequest) {
   const body = await request.json();
-  const { name, url, method, headers, requestBody } = body;
+  const { name, url, method, headers, requestBody, group } = body;
 
   if (!name || !url) {
     return NextResponse.json(
@@ -35,6 +35,7 @@ export async function POST(request: NextRequest) {
       method: method || "GET",
       headers: headers || null,
       body: requestBody || null,
+      group: group || "Default",
     },
   });
 

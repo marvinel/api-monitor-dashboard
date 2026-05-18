@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useMemo } from "react";
 import AddEndpointForm from "@/components/AddEndpointForm";
 import EndpointCard from "@/components/EndpointCard";
 
@@ -16,6 +16,8 @@ interface Endpoint {
   id: string;
   name: string;
   url: string;
+  method: string;
+  group: string;
   checks: Check[];
 }
 
@@ -35,12 +37,28 @@ export default function Home() {
     fetchEndpoints();
   }, [fetchEndpoints]);
 
+  // Group endpoints by their group field
+  const groupedEndpoints = useMemo(() => {
+    const groups: Record<string, Endpoint[]> = {};
+    endpoints.forEach((ep) => {
+      const group = ep.group || "Default";
+      if (!groups[group]) groups[group] = [];
+      groups[group].push(ep);
+    });
+    return groups;
+  }, [endpoints]);
+
+  const existingGroups = useMemo(
+    () => [...new Set(endpoints.map((ep) => ep.group || "Default"))],
+    [endpoints]
+  );
+
   if (!mounted) return null;
 
   const runCheck = async () => {
     setChecking(true);
     await fetch("/api/check", { method: "POST" });
-    await fetchEndpoints(); // refresh data after check
+    await fetchEndpoints();
     setChecking(false);
   };
 
@@ -73,9 +91,9 @@ export default function Home() {
           <button
             onClick={runCheck}
             disabled={checking || endpoints.length === 0}
-            className="px-5 py-2.5 bg-green-600 hover:bg-green-700 disabled:bg-gray-700 disabled:text-gray-400 text-white rounded-lg font-medium transition-colors"
+            className="px-5 py-2.5 bg-green-600 hover:bg-green-700 disabled:bg-gray-700 disabled:text-gray-400 text-white rounded-lg font-medium transition-colors cursor-pointer"
           >
-            {checking ? "Checking..." : "Run Check"}
+            {checking ? "Checking..." : "Run All Checks"}
           </button>
         </div>
 
@@ -94,25 +112,39 @@ export default function Home() {
               <span className="text-gray-400 text-sm">Down</span>
               <p className="text-xl font-bold text-red-400">{totalDown}</p>
             </div>
+            <div className="bg-gray-900 border border-gray-800 rounded-lg px-4 py-3">
+              <span className="text-gray-400 text-sm">Groups</span>
+              <p className="text-xl font-bold">{Object.keys(groupedEndpoints).length}</p>
+            </div>
           </div>
         )}
 
         {/* Add endpoint form */}
         <div className="mb-8">
-          <AddEndpointForm onAdd={fetchEndpoints} />
+          <AddEndpointForm onAdd={fetchEndpoints} existingGroups={existingGroups} />
         </div>
 
-        {/* Endpoint cards */}
-        <div className="grid gap-4">
-          {endpoints.map((endpoint) => (
-            <EndpointCard
-              key={endpoint.id}
-              endpoint={endpoint}
-              onDelete={deleteEndpoint}
-              onCheck={checkEndpoint}
-            />
-          ))}
-        </div>
+        {/* Grouped endpoint cards */}
+        {Object.entries(groupedEndpoints).map(([group, groupEndpoints]) => (
+          <div key={group} className="mb-8">
+            <div className="flex items-center gap-3 mb-3">
+              <h2 className="text-lg font-semibold text-gray-200">{group}</h2>
+              <span className="text-xs text-gray-500 bg-gray-800 px-2 py-0.5 rounded">
+                {groupEndpoints.length} endpoint{groupEndpoints.length !== 1 ? "s" : ""}
+              </span>
+            </div>
+            <div className="grid gap-4">
+              {groupEndpoints.map((endpoint) => (
+                <EndpointCard
+                  key={endpoint.id}
+                  endpoint={endpoint}
+                  onDelete={deleteEndpoint}
+                  onCheck={checkEndpoint}
+                />
+              ))}
+            </div>
+          </div>
+        ))}
 
         {endpoints.length === 0 && (
           <div className="text-center py-16 text-gray-600">

@@ -15,6 +15,7 @@ model Endpoint {
   method    String   @default("GET") // HTTP method: GET, POST, PUT, etc.
   headers   String?  // JSON string of headers, e.g. {"Authorization": "Bearer xxx"}
   body      String?  // Request body for POST/PUT requests
+  group     String   @default("Default") // Group/category for organizing endpoints
   interval  Int      @default(300) // Check interval in seconds (default: 5 min)
   createdAt DateTime @default(now())
   checks    Check[]  // All the health checks for this endpoint

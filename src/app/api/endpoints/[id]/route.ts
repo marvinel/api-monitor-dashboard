@@ -22,7 +22,7 @@ export async function PUT(
 ) {
   const { id } = await params;
   const data = await request.json();
-  const { name, url, method, headers, requestBody } = data;
+  const { name, url, method, headers, requestBody, group } = data;
 
   const endpoint = await prisma.endpoint.update({
     where: { id },
@@ -30,6 +30,7 @@ export async function PUT(
       ...(name && { name }),
       ...(url && { url }),
       ...(method && { method }),
+      ...(group && { group }),
       headers: headers ?? undefined,
       body: requestBody ?? undefined,
     },

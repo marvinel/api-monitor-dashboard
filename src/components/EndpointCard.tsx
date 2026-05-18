@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import LatencyChart from "./LatencyChart";
 
 interface Check {
@@ -43,7 +44,14 @@ export default function EndpointCard({ endpoint, onDelete, onCheck }: EndpointCa
             }`}
           />
           <div>
-            <h3 className="text-white font-semibold">{endpoint.name}</h3>
+            <h3 className="text-white font-semibold">
+              <Link
+                href={`/endpoints/${endpoint.id}`}
+                className="hover:text-blue-400 transition-colors"
+              >
+                {endpoint.name}
+              </Link>
+            </h3>
             <p className="text-gray-500 text-sm truncate max-w-xs">
               {endpoint.url}
             </p>
@@ -87,7 +95,9 @@ export default function EndpointCard({ endpoint, onDelete, onCheck }: EndpointCa
 
       {/* Chart */}
       {endpoint.checks.length > 1 && (
-        <LatencyChart checks={endpoint.checks} />
+        <div className="h-40">
+          <LatencyChart checks={endpoint.checks} />
+        </div>
       )}
 
       {endpoint.checks.length === 0 && (

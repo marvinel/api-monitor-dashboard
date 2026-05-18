@@ -33,7 +33,7 @@ export default function LatencyChart({ checks }: LatencyChartProps) {
   }));
 
   return (
-    <div className="h-40 w-full">
+    <div className="h-full w-full min-h-[10rem]">
       <ResponsiveContainer width="100%" height="100%">
         <LineChart data={data}>
           <XAxis

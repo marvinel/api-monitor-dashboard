@@ -1,0 +1,28 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+// Each API endpoint we want to monitor
+model Endpoint {
+  id        String   @id @default(cuid())
+  name      String   // Friendly name, e.g. "GitHub API"
+  url       String   // The URL to ping, e.g. "https://api.github.com"
+  interval  Int      @default(300) // Check interval in seconds (default: 5 min)
+  createdAt DateTime @default(now())
+  checks    Check[]  // All the health checks for this endpoint
+}
+
+// Each health check result
+model Check {
+  id         String   @id @default(cuid())
+  status     Int      // HTTP status code (200, 500, 0 if timeout)
+  latency    Int      // Response time in milliseconds
+  isUp       Boolean  // true if status is 2xx
+  checkedAt  DateTime @default(now())
+  endpoint   Endpoint @relation(fields: [endpointId], references: [id], onDelete: Cascade)
+  endpointId String
+}

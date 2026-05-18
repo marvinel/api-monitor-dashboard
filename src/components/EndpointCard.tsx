@@ -15,6 +15,7 @@ interface Endpoint {
   id: string;
   name: string;
   url: string;
+  method: string;
   checks: Check[];
 }
 
@@ -53,6 +54,9 @@ export default function EndpointCard({ endpoint, onDelete, onCheck }: EndpointCa
               </Link>
             </h3>
             <p className="text-gray-500 text-sm truncate max-w-xs">
+              <span className="text-gray-400 font-mono text-xs mr-2">
+                {endpoint.method}
+              </span>
               {endpoint.url}
             </p>
           </div>

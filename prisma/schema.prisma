@@ -12,6 +12,9 @@ model Endpoint {
   id        String   @id @default(cuid())
   name      String   // Friendly name, e.g. "GitHub API"
   url       String   // The URL to ping, e.g. "https://api.github.com"
+  method    String   @default("GET") // HTTP method: GET, POST, PUT, etc.
+  headers   String?  // JSON string of headers, e.g. {"Authorization": "Bearer xxx"}
+  body      String?  // Request body for POST/PUT requests
   interval  Int      @default(300) // Check interval in seconds (default: 5 min)
   createdAt DateTime @default(now())
   checks    Check[]  // All the health checks for this endpoint

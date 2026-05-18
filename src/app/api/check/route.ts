@@ -12,21 +12,33 @@ export async function POST() {
       let isUp = false;
 
       try {
-        const response = await fetch(endpoint.url, {
-          method: "GET",
-          signal: AbortSignal.timeout(10000), // 10 second timeout
-        });
+        const fetchOptions: RequestInit = {
+          method: endpoint.method,
+          signal: AbortSignal.timeout(10000),
+        };
+
+        if (endpoint.headers) {
+          fetchOptions.headers = JSON.parse(endpoint.headers);
+        }
+
+        if (endpoint.body && endpoint.method !== "GET") {
+          fetchOptions.body = endpoint.body;
+          const headers = fetchOptions.headers as Record<string, string> || {};
+          if (!headers["Content-Type"] && !headers["content-type"]) {
+            fetchOptions.headers = { ...headers, "Content-Type": "application/json" };
+          }
+        }
+
+        const response = await fetch(endpoint.url, fetchOptions);
         status = response.status;
         isUp = status >= 200 && status < 300;
       } catch {
-        // If fetch fails (timeout, DNS error, etc.), status stays 0
         status = 0;
         isUp = false;
       }
 
       const latency = Date.now() - start;
 
-      // Save the check result to the database
       const check = await prisma.check.create({
         data: {
           status,

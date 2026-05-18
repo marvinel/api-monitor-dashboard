@@ -7,7 +7,7 @@ export async function GET() {
     include: {
       checks: {
         orderBy: { checkedAt: "desc" },
-        take: 50, // Last 50 checks for charts
+        take: 50,
       },
     },
     orderBy: { createdAt: "desc" },
@@ -19,9 +19,8 @@ export async function GET() {
 // POST /api/endpoints — Add a new endpoint to monitor
 export async function POST(request: NextRequest) {
   const body = await request.json();
-  const { name, url } = body;
+  const { name, url, method, headers, requestBody } = body;
 
-  // Basic validation
   if (!name || !url) {
     return NextResponse.json(
       { error: "Name and URL are required" },
@@ -30,7 +29,13 @@ export async function POST(request: NextRequest) {
   }
 
   const endpoint = await prisma.endpoint.create({
-    data: { name, url },
+    data: {
+      name,
+      url,
+      method: method || "GET",
+      headers: headers || null,
+      body: requestBody || null,
+    },
   });
 
   return NextResponse.json(endpoint, { status: 201 });

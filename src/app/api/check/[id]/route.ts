@@ -21,10 +21,28 @@ export async function POST(
   let isUp = false;
 
   try {
-    const response = await fetch(endpoint.url, {
-      method: "GET",
+    // Build fetch options using endpoint config
+    const fetchOptions: RequestInit = {
+      method: endpoint.method,
       signal: AbortSignal.timeout(10000),
-    });
+    };
+
+    // Add headers if configured
+    if (endpoint.headers) {
+      fetchOptions.headers = JSON.parse(endpoint.headers);
+    }
+
+    // Add body if configured (only for non-GET methods)
+    if (endpoint.body && endpoint.method !== "GET") {
+      fetchOptions.body = endpoint.body;
+      // Set content-type if not already in headers
+      const headers = fetchOptions.headers as Record<string, string> || {};
+      if (!headers["Content-Type"] && !headers["content-type"]) {
+        fetchOptions.headers = { ...headers, "Content-Type": "application/json" };
+      }
+    }
+
+    const response = await fetch(endpoint.url, fetchOptions);
     status = response.status;
     isUp = status >= 200 && status < 300;
   } catch {

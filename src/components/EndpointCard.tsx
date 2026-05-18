@@ -20,9 +20,10 @@ interface Endpoint {
 interface EndpointCardProps {
   endpoint: Endpoint;
   onDelete: (id: string) => void;
+  onCheck: (id: string) => void;
 }
 
-export default function EndpointCard({ endpoint, onDelete }: EndpointCardProps) {
+export default function EndpointCard({ endpoint, onDelete, onCheck }: EndpointCardProps) {
   const latestCheck = endpoint.checks[0]; // most recent check
   const isUp = latestCheck?.isUp ?? null; // null if no checks yet
 
@@ -48,13 +49,22 @@ export default function EndpointCard({ endpoint, onDelete }: EndpointCardProps) 
             </p>
           </div>
         </div>
-        <button
-          onClick={() => onDelete(endpoint.id)}
-          className="text-gray-500 hover:text-red-400 transition-colors text-sm"
-          aria-label={`Delete ${endpoint.name}`}
-        >
-          Remove
-        </button>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => onCheck(endpoint.id)}
+            className="text-blue-400 hover:text-blue-300 transition-colors text-sm cursor-pointer"
+            aria-label={`Check ${endpoint.name}`}
+          >
+            Check
+          </button>
+          <button
+            onClick={() => onDelete(endpoint.id)}
+            className="text-gray-500 hover:text-red-400 transition-colors text-sm cursor-pointer"
+            aria-label={`Delete ${endpoint.name}`}
+          >
+            Remove
+          </button>
+        </div>
       </div>
 
       {/* Stats */}

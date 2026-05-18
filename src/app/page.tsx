@@ -49,6 +49,11 @@ export default function Home() {
     await fetchEndpoints();
   };
 
+  const checkEndpoint = async (id: string) => {
+    await fetch(`/api/check/${id}`, { method: "POST" });
+    await fetchEndpoints();
+  };
+
   const totalUp = endpoints.filter((e) => e.checks[0]?.isUp).length;
   const totalDown = endpoints.filter(
     (e) => e.checks.length > 0 && !e.checks[0]?.isUp
@@ -104,6 +109,7 @@ export default function Home() {
               key={endpoint.id}
               endpoint={endpoint}
               onDelete={deleteEndpoint}
+              onCheck={checkEndpoint}
             />
           ))}
         </div>

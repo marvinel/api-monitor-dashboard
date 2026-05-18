@@ -99,7 +99,7 @@ export default function EndpointCard({ endpoint, onDelete, onCheck }: EndpointCa
 
       {/* Chart */}
       {endpoint.checks.length > 1 && (
-        <div className="h-40">
+        <div className="h-40 w-full" style={{ minWidth: "100px" }}>
           <LatencyChart checks={endpoint.checks} />
         </div>
       )}

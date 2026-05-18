@@ -8,6 +8,7 @@ interface AddEndpointFormProps {
 }
 
 export default function AddEndpointForm({ onAdd, existingGroups }: AddEndpointFormProps) {
+  const [isOpen, setIsOpen] = useState(false);
   const [name, setName] = useState("");
   const [url, setUrl] = useState("");
   const [method, setMethod] = useState("GET");
@@ -43,12 +44,32 @@ export default function AddEndpointForm({ onAdd, existingGroups }: AddEndpointFo
     setBody("");
     setShowAdvanced(false);
     setLoading(false);
+    setIsOpen(false);
     onAdd();
   };
 
+  if (!isOpen) {
+    return (
+      <button
+        onClick={() => setIsOpen(true)}
+        className="w-full py-3 border-2 border-dashed border-gray-700 hover:border-blue-500 rounded-xl text-gray-400 hover:text-blue-400 transition-colors cursor-pointer"
+      >
+        + Add New Endpoint
+      </button>
+    );
+  }
+
   return (
     <div className="bg-gray-900 border border-gray-800 rounded-xl p-6">
-      <h2 className="text-lg font-semibold text-white mb-4">Add New Endpoint</h2>
+      <div className="flex items-center justify-between mb-4">
+        <h2 className="text-lg font-semibold text-white">Add New Endpoint</h2>
+        <button
+          onClick={() => setIsOpen(false)}
+          className="text-gray-400 hover:text-white transition-colors cursor-pointer text-sm"
+        >
+          ✕ Close
+        </button>
+      </div>
       <form onSubmit={handleSubmit} className="space-y-4">
         {/* Row 1: Name, URL, Method */}
         <div className="grid grid-cols-1 md:grid-cols-[1fr_2fr_auto] gap-3">

@@ -1,5 +1,6 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import {
   LineChart,
   Line,
@@ -22,6 +23,14 @@ interface LatencyChartProps {
 }
 
 export default function LatencyChart({ checks }: LatencyChartProps) {
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    // Small delay to ensure container has dimensions before rendering chart
+    const timer = setTimeout(() => setMounted(true), 50);
+    return () => clearTimeout(timer);
+  }, []);
+
   // Reverse so oldest is on the left, newest on the right
   const data = [...checks].reverse().map((check) => ({
     time: new Date(check.checkedAt).toLocaleTimeString([], {
@@ -32,9 +41,11 @@ export default function LatencyChart({ checks }: LatencyChartProps) {
     isUp: check.isUp,
   }));
 
+  if (!mounted) return <div className="h-full w-full" />;
+
   return (
-    <div className="h-full w-full min-h-[10rem] min-w-[1px]">
-      <ResponsiveContainer width="100%" height="100%" minWidth={1} minHeight={1}>
+    <div className="h-full w-full" style={{ minHeight: "160px", minWidth: "100px" }}>
+      <ResponsiveContainer width="100%" height="100%">
         <LineChart data={data}>
           <XAxis
             dataKey="time"

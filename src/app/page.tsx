@@ -1,65 +1,118 @@
-import Image from "next/image";
+"use client";
+
+import { useEffect, useState, useCallback } from "react";
+import AddEndpointForm from "@/components/AddEndpointForm";
+import EndpointCard from "@/components/EndpointCard";
+
+interface Check {
+  id: string;
+  status: number;
+  latency: number;
+  isUp: boolean;
+  checkedAt: string;
+}
+
+interface Endpoint {
+  id: string;
+  name: string;
+  url: string;
+  checks: Check[];
+}
 
 export default function Home() {
+  const [endpoints, setEndpoints] = useState<Endpoint[]>([]);
+  const [checking, setChecking] = useState(false);
+
+  const fetchEndpoints = useCallback(async () => {
+    const res = await fetch("/api/endpoints");
+    const data = await res.json();
+    setEndpoints(data);
+  }, []);
+
+  useEffect(() => {
+    fetchEndpoints();
+  }, [fetchEndpoints]);
+
+  const runCheck = async () => {
+    setChecking(true);
+    await fetch("/api/check", { method: "POST" });
+    await fetchEndpoints(); // refresh data after check
+    setChecking(false);
+  };
+
+  const deleteEndpoint = async (id: string) => {
+    await fetch(`/api/endpoints/${id}`, { method: "DELETE" });
+    await fetchEndpoints();
+  };
+
+  const totalUp = endpoints.filter((e) => e.checks[0]?.isUp).length;
+  const totalDown = endpoints.filter(
+    (e) => e.checks.length > 0 && !e.checks[0]?.isUp
+  ).length;
+
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
-        </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
+    <main className="min-h-screen bg-gray-950 text-white p-8">
+      <div className="max-w-5xl mx-auto">
+        {/* Header */}
+        <div className="flex items-center justify-between mb-8">
+          <div>
+            <h1 className="text-3xl font-bold">API Monitor</h1>
+            <p className="text-gray-400 mt-1">
+              Track the health and performance of your API integrations
+            </p>
+          </div>
+          <button
+            onClick={runCheck}
+            disabled={checking || endpoints.length === 0}
+            className="px-5 py-2.5 bg-green-600 hover:bg-green-700 disabled:bg-gray-700 disabled:text-gray-400 text-white rounded-lg font-medium transition-colors"
           >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
+            {checking ? "Checking..." : "Run Check"}
+          </button>
+        </div>
+
+        {/* Stats summary */}
+        {endpoints.length > 0 && (
+          <div className="flex gap-4 mb-6">
+            <div className="bg-gray-900 border border-gray-800 rounded-lg px-4 py-3">
+              <span className="text-gray-400 text-sm">Total</span>
+              <p className="text-xl font-bold">{endpoints.length}</p>
+            </div>
+            <div className="bg-gray-900 border border-gray-800 rounded-lg px-4 py-3">
+              <span className="text-gray-400 text-sm">Up</span>
+              <p className="text-xl font-bold text-green-400">{totalUp}</p>
+            </div>
+            <div className="bg-gray-900 border border-gray-800 rounded-lg px-4 py-3">
+              <span className="text-gray-400 text-sm">Down</span>
+              <p className="text-xl font-bold text-red-400">{totalDown}</p>
+            </div>
+          </div>
+        )}
+
+        {/* Add endpoint form */}
+        <div className="mb-8">
+          <AddEndpointForm onAdd={fetchEndpoints} />
+        </div>
+
+        {/* Endpoint cards */}
+        <div className="grid gap-4">
+          {endpoints.map((endpoint) => (
+            <EndpointCard
+              key={endpoint.id}
+              endpoint={endpoint}
+              onDelete={deleteEndpoint}
             />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
+          ))}
         </div>
-      </main>
-    </div>
+
+        {endpoints.length === 0 && (
+          <div className="text-center py-16 text-gray-600">
+            <p className="text-lg">No endpoints yet.</p>
+            <p className="text-sm mt-1">
+              Add an API URL above to start monitoring.
+            </p>
+          </div>
+        )}
+      </div>
+    </main>
   );
 }
